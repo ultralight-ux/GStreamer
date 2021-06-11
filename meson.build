@@ -319,18 +319,16 @@ if get_option('default_library') == 'static'
     endif
   endif
 
-  # Build both shared and static library
-  gstfull = both_libraries('gstreamer-full-1.0',
+  gstfull = shared_library('gstreamer-full-1.0',
     init_static_plugins_c,
-    link_with : all_plugins,
+    link_with : all_plugins + exposed_libs,
     link_args: gstfull_link_args,
-    link_whole : exposed_libs,
     dependencies : incdir_deps + glib_deps,
     link_depends : link_deps,
     install : true,
   )
 
-  gst_full_dep = declare_dependency(link_with: gstfull.get_shared_lib(),
+  gst_full_dep = declare_dependency(link_with: gstfull,
     dependencies : incdir_deps + glib_deps,
     include_directories: include_directories('.')
   )

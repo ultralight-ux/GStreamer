@@ -5,6 +5,22 @@ import os
 from string import Template
 
 TEMPLATE = Template('''
+#ifndef BUILDING_GST
+#define BUILDING_GST 1
+#endif
+
+#ifndef GST_API_EXPORT
+#if defined(_MSC_VER)
+# define GST_API_EXPORT __declspec(dllexport) extern
+#else
+# if defined(__GNUC__) || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590))
+#  define GST_API_EXPORT extern __attribute__ ((visibility ("default")))
+# else
+#  define GST_API_EXPORT extern
+# endif
+#endif
+#endif
+
 #include <gst/gst.h>
 
 $elements_declaration
@@ -13,7 +29,7 @@ $device_providers_declaration
 $dynamic_types_declaration
 $plugins_declaration
 
-void
+GST_API void
 gst_init_static_plugins (void)
 {
   static gsize initialization_value = 0;
