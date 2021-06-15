@@ -155,7 +155,7 @@ static char *gst_info_printf_pointer_extension_func (const char *format,
 #define BT_BUF_SIZE 100
 #endif /* HAVE_BACKTRACE */
 
-#ifdef HAVE_DBGHELP
+#if defined(HAVE_DBGHELP) && (WINAPI_FAMILY != WINAPI_FAMILY_GAMES)
 #include <windows.h>
 #include <dbghelp.h>
 #include <tlhelp32.h>
@@ -991,6 +991,17 @@ gst_debug_construct_term_color (guint colorinfo)
 
   return g_string_free (color, FALSE);
 }
+
+#ifndef FOREGROUND_BLUE
+#define FOREGROUND_BLUE      0x0001 // text color contains blue.
+#define FOREGROUND_GREEN     0x0002 // text color contains green.
+#define FOREGROUND_RED       0x0004 // text color contains red.
+#define FOREGROUND_INTENSITY 0x0008 // text color is intensified.
+#define BACKGROUND_BLUE      0x0010 // background color contains blue.
+#define BACKGROUND_GREEN     0x0020 // background color contains green.
+#define BACKGROUND_RED       0x0040 // background color contains red.
+#define BACKGROUND_INTENSITY 0x0080 // background color is intensified.
+#endif
 
 /**
  * gst_debug_construct_win_color:
@@ -2933,7 +2944,7 @@ generate_backtrace_trace (void)
 #define generate_backtrace_trace() NULL
 #endif /* HAVE_BACKTRACE */
 
-#ifdef HAVE_DBGHELP
+#if defined(HAVE_DBGHELP) && (WINAPI_FAMILY != WINAPI_FAMILY_GAMES)
 /* *INDENT-OFF* */
 static struct
 {
@@ -3126,7 +3137,7 @@ gst_debug_get_stack_trace (GstStackTraceFlags flags)
 #ifdef HAVE_UNWIND
   if ((flags & GST_STACK_TRACE_SHOW_FULL) || !have_backtrace)
     trace = generate_unwind_trace (flags);
-#elif defined(HAVE_DBGHELP)
+#elif defined(HAVE_DBGHELP) && (WINAPI_FAMILY != WINAPI_FAMILY_GAMES)
   trace = generate_dbghelp_trace ();
 #endif
 

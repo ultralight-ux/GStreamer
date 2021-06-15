@@ -878,29 +878,37 @@ rules_from_windows_time_zone (const gchar   *identifier,
 
   size = sizeof tzi.StandardName;
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   /* use RegLoadMUIStringW() to query MUI_Std from the registry if possible, otherwise
      fallback to querying Std */
   if (RegLoadMUIStringW (key, L"MUI_Std", tzi.StandardName,
                          size, &size, 0, winsyspath) != ERROR_SUCCESS)
     {
+#endif
       size = sizeof tzi.StandardName;
       if (RegQueryValueExW (key, L"Std", NULL, NULL,
                             (LPBYTE)&(tzi.StandardName), &size) != ERROR_SUCCESS)
         goto registry_failed;
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
     }
+#endif
 
   size = sizeof tzi.DaylightName;
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   /* use RegLoadMUIStringW() to query MUI_Dlt from the registry if possible, otherwise
      fallback to querying Dlt */
   if (RegLoadMUIStringW (key, L"MUI_Dlt", tzi.DaylightName,
                          size, &size, 0, winsyspath) != ERROR_SUCCESS)
     {
+#endif
       size = sizeof tzi.DaylightName;
       if (RegQueryValueExW (key, L"Dlt", NULL, NULL,
                             (LPBYTE)&(tzi.DaylightName), &size) != ERROR_SUCCESS)
         goto registry_failed;
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
     }
+#endif
 
   RegCloseKey (key);
   if (RegOpenKeyExW (HKEY_LOCAL_MACHINE, subkey_dynamic_w, 0,

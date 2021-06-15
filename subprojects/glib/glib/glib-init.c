@@ -342,6 +342,8 @@ glib_init (void)
 
 #if defined (G_OS_WIN32)
 
+#if defined (DLL_EXPORT)
+
 BOOL WINAPI DllMain (HINSTANCE hinstDLL,
                      DWORD     fdwReason,
                      LPVOID    lpvReserved);
@@ -388,6 +390,12 @@ DllMain (HINSTANCE hinstDLL,
 
   return TRUE;
 }
+
+#else
+
+HMODULE glib_dll = 0;
+
+#endif
 
 #elif defined (G_HAS_CONSTRUCTORS)
 

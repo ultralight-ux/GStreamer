@@ -264,7 +264,9 @@ g_win32_network_monitor_initable_init (GInitable     *initable,
                                        GError       **error)
 {
   GWin32NetworkMonitor *win = G_WIN32_NETWORK_MONITOR (initable);
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   NTSTATUS status;
+#endif
   gboolean read;
 
   if (!win->priv->initialized)
@@ -273,6 +275,7 @@ g_win32_network_monitor_initable_init (GInitable     *initable,
 
       /* Read current IP routing table. */
       read = win_network_monitor_process_table (win, &win->priv->init_error);
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
       if (read)
         {
           /* Register for IPv4 and IPv6 route updates. */
@@ -281,6 +284,7 @@ g_win32_network_monitor_initable_init (GInitable     *initable,
             g_set_error (&win->priv->init_error, G_IO_ERROR, G_IO_ERROR_FAILED,
                          "NotifyRouteChange2() error: %ld", status);
         }
+#endif
 
       win->priv->initialized = TRUE;
     }

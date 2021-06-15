@@ -1302,10 +1302,14 @@ sbcs_mblen(csconv_t *cv UNUSED, const uchar *buf UNUSED, int bufsize UNUSED)
 static int
 dbcs_mblen(csconv_t *cv, const uchar *buf, int bufsize)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+    return seterror(EINVAL);
+#else
     int len = IsDBCSLeadByteEx(cv->codepage, buf[0]) ? 2 : 1;
     if (bufsize < len)
         return seterror(EINVAL);
     return len;
+#endif
 }
 
 static int

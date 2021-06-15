@@ -1529,9 +1529,13 @@ static DWORD
 registry_watch_key (HKEY   hpath,
                     HANDLE event)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return ERROR_INVALID_FUNCTION;
+#else
   return RegNotifyChangeKeyValue (hpath, TRUE,
                                   REG_NOTIFY_CHANGE_NAME | REG_NOTIFY_CHANGE_LAST_SET,
                                   event, TRUE);
+#endif
 }
 
 /* This handler runs in the main thread to emit the changed signals */

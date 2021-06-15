@@ -80,10 +80,12 @@ _g_module_open (const gchar *file_name,
 #endif
   wfilename = g_utf8_to_utf16 (file_name, -1, NULL, NULL, NULL);
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   /* suppress error dialog */
   success = SetThreadErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS, &old_mode);
   if (!success)
     set_error ("");
+#endif
 
   /* When building for UWP, load app asset DLLs instead of filesystem DLLs.
    * Needs MSVC, Windows 8 and newer, and is only usable from apps. */
@@ -93,8 +95,10 @@ _g_module_open (const gchar *file_name,
   handle = LoadLibraryW (wfilename);
 #endif
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   if (success)
     SetThreadErrorMode (old_mode, NULL);
+#endif
   g_free (wfilename);
       
   if (!handle)
@@ -123,6 +127,9 @@ _g_module_close (gpointer handle)
 static gpointer
 find_in_any_module_using_toolhelp (const gchar *symbol_name)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return NULL;
+#else
   HANDLE snapshot; 
   MODULEENTRY32 me32;
 
@@ -161,6 +168,7 @@ find_in_any_module_using_toolhelp (const gchar *symbol_name)
 #endif
 
   return p;
+#endif
 }
 
 static gpointer

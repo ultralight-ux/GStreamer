@@ -3,13 +3,15 @@
 
 gthread_sources = ['gthread-impl.c']
 if host_system == 'windows'
-  gthread_win_rc = configure_file(
-    input: 'gthread.rc.in',
-    output: 'gthread.rc',
-    configuration: glibconfig_conf,
-  )
-  gthread_win_res = windows.compile_resources(gthread_win_rc)
-  gthread_sources += [gthread_win_res]
+  if get_option('default_library') != 'static'
+    gthread_win_rc = configure_file(
+      input: 'gthread.rc.in',
+      output: 'gthread.rc',
+      configuration: glibconfig_conf,
+    )
+    gthread_win_res = windows.compile_resources(gthread_win_rc)
+    gthread_sources += [gthread_win_res]
+  endif
 endif
 
 libgthread = library('gthread-2.0',

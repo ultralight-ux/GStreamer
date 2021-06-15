@@ -209,6 +209,10 @@
 #include <io.h>
 #  include <windows.h>
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+static gulong getpid() { return 0; }
+#endif
+
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
@@ -1392,7 +1396,7 @@ g_logv (const gchar   *log_domain,
             {
               /* MessageBox is allowed on UWP apps only when building against
                * the debug CRT, which will set -D_DEBUG */
-#if defined(G_OS_WIN32) && (defined(_DEBUG) || !defined(G_WINAPI_ONLY_APP))
+#if defined(G_OS_WIN32) && (defined(_DEBUG) || !defined(G_WINAPI_ONLY_APP)) && WINAPI_FAMILY != WINAPI_FAMILY_GAMES
               if (win32_keep_fatal_message)
                 {
                   WCHAR *wide_msg;
@@ -2103,7 +2107,9 @@ g_log_writer_supports_color (gint output_fd)
    *  - http://unix.stackexchange.com/questions/198794/where-does-the-term-environment-variable-default-get-set
    */
 #ifdef G_OS_WIN32
-
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return FALSE;
+#else
 #if (defined (_MSC_VER) && _MSC_VER >= 1400)
   /* Set up our empty invalid parameter handler, for isatty(),
    * in case of bad fd's passed in for isatty(), so that
@@ -2152,6 +2158,7 @@ reset_invalid_param_handler:
 #endif
 
   return result;
+#endif
 #else
   return isatty (output_fd);
 #endif
@@ -2790,7 +2797,7 @@ handled:
     {
       /* MessageBox is allowed on UWP apps only when building against
        * the debug CRT, which will set -D_DEBUG */
-#if defined(G_OS_WIN32) && (defined(_DEBUG) || !defined(G_WINAPI_ONLY_APP))
+#if defined(G_OS_WIN32) && (defined(_DEBUG) || !defined(G_WINAPI_ONLY_APP)) && WINAPI_FAMILY != WINAPI_FAMILY_GAMES
       if (!g_test_initialized ())
         {
           WCHAR *wide_msg;

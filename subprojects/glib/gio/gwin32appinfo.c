@@ -3565,6 +3565,9 @@ uwp_package_cb (gpointer         user_data,
 static gunichar2 *
 resolve_string (gunichar2 *at_string)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return at_string;
+#else
   HRESULT hr;
   gunichar2 *result = NULL;
   gsize result_size;
@@ -3612,6 +3615,7 @@ resolve_string (gunichar2 *at_string)
   g_assert_not_reached ();
 
   return at_string;
+#endif
 }
 
 static void
@@ -4675,7 +4679,7 @@ get_appath_for_exe (const gchar *exe_basename)
   return appath;
 }
 
-
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
 static gboolean
 g_win32_app_info_launch_uwp_internal (GWin32AppInfo           *info,
                                       gboolean                 for_files,
@@ -4868,6 +4872,7 @@ g_win32_app_info_launch_internal (GWin32AppInfo      *info,
 
   return completed;
 }
+#endif
 
 static void
 free_file_or_uri (gpointer ptr)
@@ -4919,7 +4924,7 @@ g_win32_app_info_supports_files (GAppInfo *appinfo)
   return g_hash_table_size (info->app->supported_exts) > 0;
 }
 
-
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
 static IShellItemArray *
 make_item_array (gboolean   for_files,
                  GList     *files_or_uris,
@@ -5139,6 +5144,7 @@ g_win32_app_info_launch (GAppInfo           *appinfo,
 
   return res;
 }
+#endif
 
 static const char **
 g_win32_app_info_get_supported_types (GAppInfo *appinfo)
@@ -5211,10 +5217,14 @@ g_win32_app_info_iface_init (GAppInfoIface *iface)
   iface->get_description = g_win32_app_info_get_description;
   iface->get_executable = g_win32_app_info_get_executable;
   iface->get_icon = g_win32_app_info_get_icon;
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   iface->launch = g_win32_app_info_launch;
+#endif
   iface->supports_uris = g_win32_app_info_supports_uris;
   iface->supports_files = g_win32_app_info_supports_files;
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   iface->launch_uris = g_win32_app_info_launch_uris;
+#endif
 /*  iface->should_show = g_win32_app_info_should_show;*/
 /*  iface->set_as_default_for_type = g_win32_app_info_set_as_default_for_type;*/
 /*  iface->set_as_default_for_extension = g_win32_app_info_set_as_default_for_extension;*/

@@ -600,7 +600,7 @@ SetThreadName (DWORD  dwThreadID,
 typedef HRESULT (WINAPI *pSetThreadDescription) (HANDLE hThread,
                                                  PCWSTR lpThreadDescription);
 static pSetThreadDescription SetThreadDescriptionFunc = NULL;
-HMODULE kernel32_module = NULL;
+HMODULE kernel32_module_glib = NULL;
 
 static gboolean
 g_thread_win32_load_library (void)
@@ -610,14 +610,14 @@ g_thread_win32_load_library (void)
   static volatile gsize _init_once = 0;
   if (g_once_init_enter (&_init_once))
     {
-      kernel32_module = LoadLibraryW (L"kernel32.dll");
-      if (kernel32_module)
+      kernel32_module_glib = LoadLibraryW (L"kernel32.dll");
+      if (kernel32_module_glib)
         {
           SetThreadDescriptionFunc =
-              (pSetThreadDescription) GetProcAddress (kernel32_module,
+              (pSetThreadDescription) GetProcAddress (kernel32_module_glib,
                                                       "SetThreadDescription");
           if (!SetThreadDescriptionFunc)
-            FreeLibrary (kernel32_module);
+            FreeLibrary (kernel32_module_glib);
         }
       g_once_init_leave (&_init_once, 1);
     }

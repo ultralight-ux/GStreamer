@@ -206,7 +206,7 @@ g_on_error_query (const gchar *prg_name)
 
   /* MessageBox is allowed on UWP apps only when building against
    * the debug CRT, which will set -D_DEBUG */
-#if defined(_DEBUG) || !defined(G_WINAPI_ONLY_APP)
+#if (defined(_DEBUG) || !defined(G_WINAPI_ONLY_APP)) && WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   {
     WCHAR *caption = NULL;
 

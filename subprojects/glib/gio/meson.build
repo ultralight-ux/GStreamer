@@ -450,13 +450,15 @@ else
     'gwin32notificationbackend.c',
   )
 
-  gio_win_rc = configure_file(
-    input: 'gio.rc.in',
-    output: 'gio.rc',
-    configuration: glibconfig_conf,
-  )
-  gio_win_res = windows.compile_resources(gio_win_rc)
-  win32_sources += [gio_win_res]
+  if get_option('default_library') != 'static'
+    gio_win_rc = configure_file(
+      input: 'gio.rc.in',
+      output: 'gio.rc',
+      configuration: glibconfig_conf,
+    )
+    gio_win_res = windows.compile_resources(gio_win_rc)
+    win32_sources += [gio_win_res]
+  endif
 
   gio_win32_include_headers = files(
     'gwin32inputstream.h',

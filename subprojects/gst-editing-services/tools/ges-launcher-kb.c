@@ -148,6 +148,9 @@ static Win32KeyHandler *win32_handler = NULL;
 static gboolean
 gst_play_kb_source_cb (Win32KeyHandler * handler)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  return FALSE;
+#else
   HANDLE h_input = handler->console_handle;
   INPUT_RECORD buffer;
   DWORD n;
@@ -180,6 +183,7 @@ gst_play_kb_source_cb (Win32KeyHandler * handler)
   }
 
   return G_SOURCE_REMOVE;
+#endif
 }
 
 static gpointer

@@ -44,13 +44,15 @@ gobject_sources = files(
 )
 
 if host_system == 'windows'
-  gobject_win_rc = configure_file(
-    input: 'gobject.rc.in',
-    output: 'gobject.rc',
-    configuration: glibconfig_conf,
-  )
-  gobject_win_res = windows.compile_resources(gobject_win_rc)
-  gobject_sources += [gobject_win_res]
+  if get_option('default_library') != 'static'
+    gobject_win_rc = configure_file(
+      input: 'gobject.rc.in',
+      output: 'gobject.rc',
+      configuration: glibconfig_conf,
+    )
+    gobject_win_res = windows.compile_resources(gobject_win_rc)
+    gobject_sources += [gobject_win_res]
+  endif
 endif
 
 if enable_dtrace

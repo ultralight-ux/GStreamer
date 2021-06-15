@@ -229,6 +229,7 @@ g_win32_fs_monitor_callback (DWORD        error,
     }
   while (pfile_notify_walker->NextEntryOffset);
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   ReadDirectoryChangesW (monitor->hDirectory,
                          monitor->file_notify_buffer,
                          monitor->buffer_allocated_bytes,
@@ -237,6 +238,7 @@ g_win32_fs_monitor_callback (DWORD        error,
                          &monitor->buffer_filled_bytes,
                          &monitor->overlapped,
                          g_win32_fs_monitor_callback);
+#endif
 }
 
 void
@@ -285,6 +287,7 @@ g_win32_fs_monitor_init (GWin32FSMonitorPrivate *monitor,
            * "8.3" format filename, so we need to keep track of both these names
            * so that we can check against them later when it returns
            */
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
           if (GetLongPathNameW (monitor->wfullpath_with_long_prefix, wlongname, MAX_PATH_LONG) == 0)
             {
               wbasename_long = wcsrchr (monitor->wfullpath_with_long_prefix, L'\\');
@@ -293,6 +296,7 @@ g_win32_fs_monitor_init (GWin32FSMonitorPrivate *monitor,
                                         wcsdup (wfullpath);
             }
           else
+#endif
             {
               wbasename_long = wcsrchr (wlongname, L'\\');
               monitor->wfilename_long = wbasename_long != NULL ?
@@ -301,6 +305,7 @@ g_win32_fs_monitor_init (GWin32FSMonitorPrivate *monitor,
 
             }
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
           if (GetShortPathNameW (monitor->wfullpath_with_long_prefix, wshortname, MAX_PATH_LONG) == 0)
             {
               wbasename_short = wcsrchr (monitor->wfullpath_with_long_prefix, L'\\');
@@ -309,6 +314,7 @@ g_win32_fs_monitor_init (GWin32FSMonitorPrivate *monitor,
                                          wcsdup (wfullpath);
             }
           else
+#endif
             {
               wbasename_short = wcsrchr (wshortname, L'\\');
               monitor->wfilename_short = wbasename_short != NULL ?
@@ -355,6 +361,7 @@ g_win32_fs_monitor_init (GWin32FSMonitorPrivate *monitor,
   g_free (wdirname_with_long_prefix);
   g_free (dirname_with_long_prefix);
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   if (monitor->hDirectory != INVALID_HANDLE_VALUE)
     {
       ReadDirectoryChangesW (monitor->hDirectory,
@@ -366,6 +373,7 @@ g_win32_fs_monitor_init (GWin32FSMonitorPrivate *monitor,
                              &monitor->overlapped,
                              g_win32_fs_monitor_callback);
     }
+#endif
 }
 
 GWin32FSMonitorPrivate *

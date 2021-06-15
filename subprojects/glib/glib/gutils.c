@@ -550,6 +550,10 @@ static  gchar  **g_user_special_dirs = NULL;
 static gchar *
 get_special_folder (int csidl)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  gchar *retval = NULL;
+  return retval;
+#else
   wchar_t path[MAX_PATH+1];
   HRESULT hr;
   LPITEMIDLIST pidl = NULL;
@@ -565,11 +569,15 @@ get_special_folder (int csidl)
       CoTaskMemFree (pidl);
     }
   return retval;
+#endif
 }
 
 static char *
 get_windows_directory_root (void)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  return g_strdup ("C:\\");
+#else
   wchar_t wwindowsdir[MAX_PATH];
 
   if (GetWindowsDirectoryW (wwindowsdir, G_N_ELEMENTS (wwindowsdir)))
@@ -591,6 +599,7 @@ get_windows_directory_root (void)
     }
   else
     return g_strdup ("C:\\");
+#endif
 }
 
 #endif
@@ -705,6 +714,7 @@ g_get_user_database_entry (void)
 #endif /* G_OS_UNIX */
 
 #ifdef G_OS_WIN32
+#if !(defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES))
       {
         guint len = UNLEN+1;
         wchar_t buffer[UNLEN+1];
@@ -715,6 +725,7 @@ g_get_user_database_entry (void)
             e.real_name = g_strdup (e.user_name);
           }
       }
+#endif
 #endif /* G_OS_WIN32 */
 
       if (!e.user_name)
@@ -813,8 +824,10 @@ g_build_home_dir (void)
         home_dir = g_strdup (g_getenv ("USERPROFILE"));
     }
 
+#if !(defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES))
   if (home_dir == NULL)
     home_dir = get_special_folder (CSIDL_PROFILE);
+#endif
 
   if (home_dir == NULL)
     home_dir = get_windows_directory_root ();
@@ -1702,7 +1715,7 @@ g_build_user_data_dir (void)
 
   if (data_dir_env && data_dir_env[0])
     data_dir = g_strdup (data_dir_env);
-#ifdef G_OS_WIN32
+#if defined(G_OS_WIN32) && !(defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES))
   else
     data_dir = get_special_folder (CSIDL_LOCAL_APPDATA);
 #endif
@@ -1766,7 +1779,7 @@ g_build_user_config_dir (void)
 
   if (config_dir_env && config_dir_env[0])
     config_dir = g_strdup (config_dir_env);
-#ifdef G_OS_WIN32
+#if defined(G_OS_WIN32) && !(defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES))
   else
     config_dir = get_special_folder (CSIDL_LOCAL_APPDATA);
 #endif
@@ -1829,7 +1842,7 @@ g_build_user_cache_dir (void)
 
   if (cache_dir_env && cache_dir_env[0])
     cache_dir = g_strdup (cache_dir_env);
-#ifdef G_OS_WIN32
+#if defined(G_OS_WIN32) && !(defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES))
   else
     cache_dir = get_special_folder (CSIDL_INTERNET_CACHE);
 #endif
@@ -1965,6 +1978,7 @@ load_user_special_dirs (void)
 static void
 load_user_special_dirs (void)
 {
+#if !(defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES))
   typedef HRESULT (WINAPI *t_SHGetKnownFolderPath) (const GUID *rfid,
 						    DWORD dwFlags,
 						    HANDLE hToken,
@@ -2028,6 +2042,7 @@ load_user_special_dirs (void)
   
   g_user_special_dirs[G_USER_DIRECTORY_TEMPLATES] = get_special_folder (CSIDL_TEMPLATES);
   g_user_special_dirs[G_USER_DIRECTORY_VIDEOS] = get_special_folder (CSIDL_MYVIDEO);
+#endif
 }
 
 #else /* default is unix */
@@ -2378,6 +2393,7 @@ g_win32_get_system_data_dirs_for_module_real (void (*address_of_function)(void))
 
   data_dirs = g_array_new (TRUE, TRUE, sizeof (char *));
 
+#if !(defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES))
   /* Documents and Settings\All Users\Application Data */
   p = get_special_folder (CSIDL_COMMON_APPDATA);
   if (p)
@@ -2387,6 +2403,7 @@ g_win32_get_system_data_dirs_for_module_real (void (*address_of_function)(void))
   p = get_special_folder (CSIDL_COMMON_DOCUMENTS);
   if (p)
     g_array_append_val (data_dirs, p);
+#endif
 	
   /* Using the above subfolders of Documents and Settings perhaps
    * makes sense from a Windows perspective.
@@ -2581,6 +2598,10 @@ g_build_system_config_dirs (void)
   gchar **conf_dir_vector = NULL;
   const gchar *conf_dirs = g_getenv ("XDG_CONFIG_DIRS");
 #ifdef G_OS_WIN32
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  /* Return empty list */
+  conf_dir_vector = g_strsplit ("", G_SEARCHPATH_SEPARATOR_S, 0);
+#else
   if (conf_dirs)
     {
       conf_dir_vector = g_strsplit (conf_dirs, G_SEARCHPATH_SEPARATOR_S, 0);
@@ -2597,6 +2618,7 @@ g_build_system_config_dirs (void)
 
       g_free (special_conf_dirs);
     }
+#endif
 #else
   if (!conf_dirs || !conf_dirs[0])
     conf_dirs = "/etc/xdg";

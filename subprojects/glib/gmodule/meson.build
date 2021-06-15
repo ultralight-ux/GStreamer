@@ -63,13 +63,15 @@ install_headers(['gmodule.h'], subdir : 'glib-2.0')
 
 gmodule_sources = ['gmodule.c']
 if host_system == 'windows'
-  gmodule_win_rc = configure_file(
-    input: 'gmodule.rc.in',
-    output: 'gmodule.rc',
-    configuration: glibconfig_conf,
-  )
-  gmodule_win_res = windows.compile_resources(gmodule_win_rc)
-  gmodule_sources += [gmodule_win_res]
+  if get_option('default_library') != 'static'
+    gmodule_win_rc = configure_file(
+      input: 'gmodule.rc.in',
+      output: 'gmodule.rc',
+      configuration: glibconfig_conf,
+    )
+    gmodule_win_res = windows.compile_resources(gmodule_win_rc)
+    gmodule_sources += [gmodule_win_res]
+  endif
 endif
 
 libgmodule = library('gmodule-2.0',

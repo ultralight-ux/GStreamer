@@ -106,6 +106,9 @@ g_win32_mount_init (GWin32Mount *win32_mount)
 static gchar *
 _win32_get_displayname (const char *drive)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return g_strdup (drive);
+#else
   gunichar2 *wdrive = g_utf8_to_utf16 (drive, -1, NULL, NULL, NULL);
   gchar *name = NULL;
   SHFILEINFOW sfi;
@@ -114,6 +117,7 @@ _win32_get_displayname (const char *drive)
 
   g_free (wdrive);
   return name ? name : g_strdup (drive);
+#endif
 }
 
 /*
@@ -213,6 +217,9 @@ _win32_drive_type_to_icon (int type, gboolean use_symbolic)
 static GIcon *
 g_win32_mount_get_icon (GMount *mount)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return NULL;
+#else
   GWin32Mount *win32_mount = G_WIN32_MOUNT (mount);
 
   g_return_val_if_fail (win32_mount->mount_path != NULL, NULL);
@@ -238,6 +245,7 @@ g_win32_mount_get_icon (GMount *mount)
     }
 
   return g_object_ref (win32_mount->icon);
+#endif
 }
 
 static GIcon *

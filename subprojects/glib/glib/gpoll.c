@@ -141,6 +141,7 @@ poll_rest (GPollFD *msg_fd,
   GPollFD *f;
   int recursed_result;
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   if (msg_fd != NULL)
     {
       /* Wait for either messages or handles
@@ -159,7 +160,9 @@ poll_rest (GPollFD *msg_fd,
 	  g_free (emsg);
 	}
     }
-  else if (nhandles == 0)
+  else
+#endif
+  if (nhandles == 0)
     {
       /* No handles to wait for, just the timeout */
       if (timeout_ms == INFINITE)
@@ -445,11 +448,13 @@ g_poll (GPollFD *fds,
       thread_handles[i] = (HANDLE) _beginthreadex (NULL, 0, poll_thread_run, &threads_data[i], 0, &ignore);
     }
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   /* Wait for at least one thread to return */
   if (msg_fd != NULL)
     ready = MsgWaitForMultipleObjectsEx (nthreads, thread_handles, timeout,
                                          QS_ALLINPUT, MWMO_ALERTABLE);
   else
+#endif
     ready = WaitForMultipleObjects (nthreads, thread_handles, FALSE, timeout);
 
   /* Signal the stop in case any of the threads did not stop yet */

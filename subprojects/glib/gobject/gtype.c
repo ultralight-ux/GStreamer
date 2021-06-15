@@ -4512,6 +4512,8 @@ gobject_init (void)
 
 #if defined (G_OS_WIN32)
 
+#if defined (DLL_EXPORT)
+
 BOOL WINAPI DllMain (HINSTANCE hinstDLL,
                      DWORD     fdwReason,
                      LPVOID    lpvReserved);
@@ -4534,6 +4536,8 @@ DllMain (HINSTANCE hinstDLL,
 
   return TRUE;
 }
+
+#endif
 
 #elif defined (G_HAS_CONSTRUCTORS)
 #ifdef G_DEFINE_CONSTRUCTOR_NEEDS_PRAGMA

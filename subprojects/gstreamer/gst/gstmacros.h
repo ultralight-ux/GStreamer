@@ -46,7 +46,7 @@ G_BEGIN_DECLS
 #  if defined(__GNUC__) && __GNUC__ >= 4
 #    define restrict __restrict__
 #  elif defined(_MSC_VER)
-#    define restrict __restrict
+//#    define restrict __restrict
 #  else
 #    define restrict
 #  endif

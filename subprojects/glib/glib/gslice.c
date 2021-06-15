@@ -1515,7 +1515,11 @@ mem_error (const char *format,
   /* at least, put out "MEMORY-ERROR", in case we segfault during the rest of the function */
   fputs ("\n***MEMORY-ERROR***: ", stderr);
   pname = g_get_prgname();
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  g_fprintf (stderr, "%s[]: GSlice: ", pname ? pname : "");
+#else
   g_fprintf (stderr, "%s[%ld]: GSlice: ", pname ? pname : "", (long)getpid());
+#endif
   va_start (args, format);
   g_vfprintf (stderr, format, args);
   va_end (args);

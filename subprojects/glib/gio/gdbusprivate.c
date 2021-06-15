@@ -2032,6 +2032,9 @@ _g_dbus_win32_get_user_sid (void)
       goto out;
     }
 
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  goto out;
+#else
   /* Get length of buffer */
   token_information_len = 0;
   if (!GetTokenInformation (h, TokenUser, NULL, 0, &token_information_len))
@@ -2055,6 +2058,7 @@ _g_dbus_win32_get_user_sid (void)
       g_warning ("Invalid SID");
       goto out;
     }
+#endif
 
   if (!ConvertSidToStringSidA (psid, &sid))
     {
@@ -2240,17 +2244,20 @@ unpublish_session_bus (void)
 static void
 wait_console_window (void)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY != WINAPI_FAMILY_GAMES)
   FILE *console = fopen ("CONOUT$", "w");
 
   SetConsoleTitleW (L"gdbus-daemon output. Type any character to close this window.");
   fprintf (console, _("(Type any character to close this window)\n"));
   fflush (console);
   _getch ();
+#endif
 }
 
 static void
 open_console_window (void)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY != WINAPI_FAMILY_GAMES)
   if (((HANDLE) _get_osfhandle (fileno (stdout)) == INVALID_HANDLE_VALUE ||
        (HANDLE) _get_osfhandle (fileno (stderr)) == INVALID_HANDLE_VALUE) && AllocConsole ())
     {
@@ -2264,6 +2271,7 @@ open_console_window (void)
 
       atexit (wait_console_window);
     }
+#endif
 }
 
 static void
@@ -2430,6 +2438,9 @@ gchar *
 _g_dbus_get_machine_id (GError **error)
 {
 #ifdef G_OS_WIN32
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  return NULL;
+#else
   HW_PROFILE_INFOA info;
   char *src, *dest, *res;
   int i;
@@ -2469,6 +2480,7 @@ _g_dbus_get_machine_id (GError **error)
   *dest = 0;
 
   return res;
+#endif
 #else
   gchar *ret = NULL;
   GError *first_error = NULL;

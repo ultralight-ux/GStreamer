@@ -2312,6 +2312,9 @@ g_local_file_trash (GFile         *file,
 		    GCancellable  *cancellable,
 		    GError       **error)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  return FALSE;
+#else
   GLocalFile *local = G_LOCAL_FILE (file);
   SHFILEOPSTRUCTW op = {0};
   gboolean success;
@@ -2345,6 +2348,7 @@ g_local_file_trash (GFile         *file,
 
   g_free (wfilename);
   return success;
+#endif
 }
 #endif /* G_OS_WIN32 */
 

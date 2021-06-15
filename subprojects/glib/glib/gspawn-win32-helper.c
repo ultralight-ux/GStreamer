@@ -188,6 +188,9 @@ int
 main (int ignored_argc, char **ignored_argv)
 #endif
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return 0;
+#else
   int child_err_report_fd = -1;
   int helper_sync_fd = -1;
   int saved_stderr_fd = -1;
@@ -386,4 +389,5 @@ main (int ignored_argc, char **ignored_argv)
   g_strfreev (argv);
 
   return 0;
+#endif
 }

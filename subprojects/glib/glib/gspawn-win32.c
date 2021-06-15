@@ -303,6 +303,14 @@ static gboolean
 make_pipe (gint     p[2],
            GError **error)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  int errsv = -1;
+
+  g_set_error (error, G_SPAWN_ERROR, G_SPAWN_ERROR_FAILED,
+                _("Failed to create pipe for communicating with child process (%s)"),
+                g_strerror (errsv));
+  return FALSE;
+#else
   if (_pipe (p, 4096, _O_BINARY) < 0)
     {
       int errsv = errno;
@@ -314,6 +322,7 @@ make_pipe (gint     p[2],
     }
   else
     return TRUE;
+#endif
 }
 
 /* The helper process writes a status report back to us, through a
@@ -444,6 +453,13 @@ do_spawn_directly (gint                 *exit_status,
                    GPid                 *child_pid,
                    GError              **error)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  int errsv = -1;
+  g_set_error (error, G_SPAWN_ERROR, _g_spawn_exec_err_to_g_error (errsv),
+    _("Failed to execute child process (%s)"),
+    g_strerror (errsv));
+  return FALSE;
+#else
   const int mode = (exit_status == NULL) ? P_NOWAIT : P_WAIT;
   const gchar * const *new_argv;
   gintptr rc = -1;
@@ -528,6 +544,7 @@ do_spawn_directly (gint                 *exit_status,
     *exit_status = rc;
 
   return TRUE;
+#endif
 }
 
 static gboolean
@@ -549,6 +566,9 @@ fork_exec (gint                  *exit_status,
            gint                  *err_report,
            GError               **error)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return FALSE;
+#else
   char **protected_argv;
   char args[ARG_COUNT][10];
   char **new_argv;
@@ -625,9 +645,11 @@ fork_exec (gint                  *exit_status,
     goto cleanup_and_fail;
   
   new_argv = g_new (char *, argc + 1 + ARG_COUNT);
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   if (GetConsoleWindow () != NULL)
     helper_process = HELPER_PROCESS "-console.exe";
   else
+#endif
     helper_process = HELPER_PROCESS ".exe";
   
   glib_dll_directory = _glib_get_dll_directory ();
@@ -916,6 +938,7 @@ fork_exec (gint                  *exit_status,
     close (stderr_pipe[1]);
 
   return FALSE;
+#endif
 }
 
 gboolean

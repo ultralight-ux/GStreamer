@@ -1458,6 +1458,7 @@ win32_get_file_user_info (const gchar  *filename,
 			  gchar       **user_name, 
 			  gchar       **real_name)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY != WINAPI_FAMILY_GAMES)
   PSECURITY_DESCRIPTOR psd = NULL;
   DWORD sd_size = 0; /* first call calculates the size required */
   
@@ -1540,6 +1541,7 @@ win32_get_file_user_info (const gchar  *filename,
       g_free (psd);
     }
   g_free (wfilename);
+#endif
 }
 #endif /* G_OS_WIN32 */
 

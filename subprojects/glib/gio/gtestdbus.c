@@ -117,6 +117,7 @@ _g_object_unref_and_wait_weak_notify (gpointer object)
 static void
 _g_test_watcher_add_pid (GPid pid)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY != WINAPI_FAMILY_GAMES)
   static gsize started = 0;
   HANDLE job;
 
@@ -138,6 +139,7 @@ _g_test_watcher_add_pid (GPid pid)
 
   if (!AssignProcessToJobObject(job, pid))
     g_warning ("Can't assign process to job: %s", g_win32_error_message (GetLastError()));
+#endif
 }
 
 static void

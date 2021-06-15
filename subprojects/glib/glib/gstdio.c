@@ -245,7 +245,11 @@ _g_win32_fill_statbuf_from_handle_info (const wchar_t                    *filena
      * Return value of 0 gives us 0 - 1 = -1,
      * which is the "no idea" value for st_dev.
      */
+  #if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+    statbuf->st_dev = -1;
+  #else
     statbuf->st_dev = _getdrive () - 1;
+  #endif
 
   statbuf->st_rdev = statbuf->st_dev;
   /* Theoretically, it's possible to set it for ext-FS. No idea how.
@@ -370,6 +374,9 @@ _g_win32_readlink_handle_raw (HANDLE      h,
                               gunichar2 **alloc_buf,
                               gboolean    terminate)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return -1;
+#else
   DWORD error_code;
   DWORD returned_bytes = 0;
   BYTE *data;
@@ -423,6 +430,7 @@ _g_win32_readlink_handle_raw (HANDLE      h,
     to_copy = 0;
 
   return _g_win32_copy_and_maybe_terminate (data, to_copy, buf, buf_size, alloc_buf, terminate);
+#endif
 }
 
 /* Read the link data from a symlink/mountpoint represented

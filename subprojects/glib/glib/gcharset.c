@@ -298,6 +298,7 @@ g_get_console_charset (const char **charset)
             }
         }
     }
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   /* next try querying console codepage using native win32 API */
   if (raw == NULL)
     {
@@ -315,6 +316,7 @@ g_get_console_charset (const char **charset)
           g_free (emsg);
         }
     }
+#endif
   /* fall-back to UTF-8 if the rest failed (it's a universal default) */
   if (raw == NULL)
     raw = "UTF-8";

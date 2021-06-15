@@ -847,21 +847,23 @@ g_io_win32_check (GSource *source)
 	return TRUE;
       else if (watch->channel->is_readable)
         {
-	  INPUT_RECORD buffer;
-	  DWORD n;
-	  if (PeekConsoleInput ((HANDLE) watch->pollfd.fd, &buffer, 1, &n) &&
-	      n == 1)
-	    {
-	      /* _kbhit() does quite complex processing to find out
-	       * whether at least one of the key events pending corresponds
-	       * to a "real" character that can be read.
-	       */
-	      if (_kbhit ())
-		return TRUE;
-	      
-	      /* Discard all other kinds of events */
-	      ReadConsoleInput ((HANDLE) watch->pollfd.fd, &buffer, 1, &n);
-	    }
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
+          INPUT_RECORD buffer;
+          DWORD n;
+          if (PeekConsoleInput ((HANDLE) watch->pollfd.fd, &buffer, 1, &n) &&
+              n == 1)
+            {
+              /* _kbhit() does quite complex processing to find out
+              * whether at least one of the key events pending corresponds
+              * to a "real" character that can be read.
+              */
+              if (_kbhit ())
+                return TRUE;
+              
+              /* Discard all other kinds of events */
+              ReadConsoleInput ((HANDLE) watch->pollfd.fd, &buffer, 1, &n);
+            }
+#endif
         }
       return FALSE;
 
@@ -1832,7 +1834,11 @@ g_io_win32_console_get_flags_internal (GIOChannel  *channel)
   DWORD count;
   INPUT_RECORD record;
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  channel->is_readable = FALSE;
+#else
   channel->is_readable = PeekConsoleInput (handle, &record, 1, &count);
+#endif
   channel->is_writeable = WriteFile (handle, &c, 0, &count, NULL);
   channel->is_seekable = FALSE;
 
@@ -1987,8 +1993,13 @@ g_io_channel_win32_new_messages (guint hwnd)
   win32_channel->hwnd = (HWND) hwnd;
 
   /* XXX: check this. */
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  channel->is_readable = FALSE;
+  channel->is_writeable = FALSE;
+#else
   channel->is_readable = IsWindow (win32_channel->hwnd);
   channel->is_writeable = IsWindow (win32_channel->hwnd);
+#endif
 
   channel->is_seekable = FALSE;
 

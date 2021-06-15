@@ -1901,8 +1901,10 @@ platform_get_argv0 (void)
          cmdline[0] == 0x20)
     cmdline++;
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   wargv = CommandLineToArgvW (cmdline, &wargc);
   if (G_UNLIKELY (wargv == NULL))
+#endif
     return NULL;
 
   if (wargc > 0)

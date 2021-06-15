@@ -473,6 +473,9 @@ g_win32_package_parser_enum_packages (GWin32PackageParserCallback   callback,
 static gboolean
 parse_manifest_file (struct _xml_sax_state *sax)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  return FALSE;
+#else
   HRESULT hr;
   HANDLE file_handle = INVALID_HANDLE_VALUE;
   IStream *file_stream = NULL;
@@ -541,6 +544,7 @@ parse_manifest_file (struct _xml_sax_state *sax)
   (void) IStream_Release (file_stream);
 
   return result;
+#endif
 }
 
 static gboolean
@@ -550,6 +554,9 @@ xml_parser_get_current_state (struct _xml_sax_state  *sax,
                               const wchar_t         **prefix,
                               const wchar_t         **value)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  return FALSE;
+#else
   HRESULT hr;
   UINT xml_line_number;
   UINT xml_line_position;
@@ -595,12 +602,16 @@ xml_parser_get_current_state (struct _xml_sax_state  *sax,
     }
 
   return TRUE;
+#endif
 }
 
 static gboolean
 xml_parser_iteration (struct _xml_sax_state  *sax,
                       IXmlReader             *xml_reader)
 {
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  return FALSE;
+#else
   HRESULT hr;
   XmlNodeType xml_node_type;
   const wchar_t *local_name;
@@ -815,4 +826,5 @@ xml_parser_iteration (struct _xml_sax_state  *sax,
     }
 
   return TRUE;
+#endif
 }

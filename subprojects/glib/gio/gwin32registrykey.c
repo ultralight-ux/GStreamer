@@ -71,7 +71,7 @@ typedef struct _KEY_BASIC_INFORMATION {
 #define HKEY_CURRENT_USER_LOCAL_SETTINGS ((HKEY) (ULONG_PTR)((LONG)0x80000007))
 #endif
 
-#if !defined (__UNICODE_STRING_DEFINED) && defined (__MINGW32_)
+#if !defined (__UNICODE_STRING_DEFINED) && (defined (__MINGW32_) || WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
 #define __UNICODE_STRING_DEFINED
 typedef struct _UNICODE_STRING {
   USHORT Length;
@@ -81,6 +81,7 @@ typedef struct _UNICODE_STRING {
 #endif
 typedef const UNICODE_STRING* PCUNICODE_STRING;
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
 typedef NTSTATUS
 (NTAPI * NtQueryKeyFunc)(HANDLE                key_handle,
                          KEY_INFORMATION_CLASS key_info_class,
@@ -104,6 +105,7 @@ typedef NTSTATUS
 
 static NtQueryKeyFunc nt_query_key = NULL;
 static NtNotifyChangeMultipleKeysFunc nt_notify_change_multiple_keys = NULL;
+#endif
 
 #define G_WIN32_KEY_UNWATCHED 0
 #define G_WIN32_KEY_WATCHED 1
@@ -1690,6 +1692,7 @@ static void
 _g_win32_registry_key_reread_kernel (GWin32RegistryKey        *key,
                                      GWin32RegistryKeyPrivate *buf)
 {
+ #if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   NTSTATUS status;
   KEY_BASIC_INFORMATION *basic_info;
   ULONG basic_info_size;
@@ -1729,6 +1732,7 @@ _g_win32_registry_key_reread_kernel (GWin32RegistryKey        *key,
   buf->absolute_path_w = g_wcsdup (&basic_info->Name[0],
                                    basic_info->NameLength + sizeof (gunichar2));
   g_free (basic_info);
+#endif
 }
 
 static void
@@ -1745,6 +1749,7 @@ static void
 _g_win32_registry_key_reread (GWin32RegistryKey        *key,
                               GWin32RegistryKeyPrivate *buf)
 {
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   if (g_once_init_enter (&nt_query_key))
     {
       NtQueryKeyFunc func;
@@ -1765,6 +1770,7 @@ _g_win32_registry_key_reread (GWin32RegistryKey        *key,
     _g_win32_registry_key_reread_kernel (key, buf);
   else
     _g_win32_registry_key_reread_user (key, buf);
+#endif
 }
 
 static gboolean
@@ -1878,19 +1884,21 @@ g_win32_registry_get_os_dirs_w (void)
       gunichar2 **new_mui_os_dirs;
       gunichar2 *system32 = NULL;
       gunichar2 *syswow64 = NULL;
-      UINT buffer_size;
+      UINT buffer_size = 0;
       gsize array_index = 0;
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
       buffer_size = GetSystemWow64DirectoryW (NULL, 0);
 
       if (buffer_size > 0)
         {
-          UINT copied;
+          UINT copied = 0;
           syswow64 = g_malloc (buffer_size * sizeof (gunichar2));
           copied = GetSystemWow64DirectoryW (syswow64, buffer_size);
           if (copied <= 0)
             g_clear_pointer (&syswow64, g_free);
         }
+#endif
 
       buffer_size = GetSystemDirectoryW (NULL, 0);
 
@@ -2161,6 +2169,9 @@ MuiRegQueryValueExW (HKEY                     hKey,
                      LPDWORD                  lpcbData,
                      const gunichar2 * const *mui_dll_dirs)
 {
+ #if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return RegQueryValueExW (hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
+ #else
   gsize dir_index;
   LSTATUS result = ERROR_PATH_NOT_FOUND;
   DWORD bufsize;
@@ -2229,6 +2240,7 @@ MuiRegQueryValueExW (HKEY                     hKey,
     *lpType = REG_SZ;
 
   return result;
+#endif
 }
 
 /**
@@ -2419,6 +2431,7 @@ g_win32_registry_key_get_value_w (GWin32RegistryKey        *key,
   return TRUE;
 }
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
 static VOID NTAPI
 key_changed (PVOID            closure,
              PIO_STATUS_BLOCK status_block,
@@ -2438,6 +2451,7 @@ key_changed (PVOID            closure,
   key->priv->user_data = NULL;
   g_object_unref (key);
 }
+#endif
 
 /**
  * g_win32_registry_key_watch:
@@ -2481,6 +2495,9 @@ g_win32_registry_key_watch (GWin32RegistryKey                   *key,
                             gpointer                             user_data,
                             GError                             **error)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return FALSE;
+#else
   ULONG filter;
   gboolean started_to_watch;
   NTSTATUS status;
@@ -2561,6 +2578,7 @@ g_win32_registry_key_watch (GWin32RegistryKey                   *key,
   g_free (status_block);
 
   return FALSE;
+#endif
 }
 
 /**

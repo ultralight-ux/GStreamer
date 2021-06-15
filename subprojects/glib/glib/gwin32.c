@@ -522,6 +522,9 @@ g_win32_check_windows_version (const gint major,
                                const gint spver,
                                const GWin32OSType os_type)
 {
+#if WINAPI_FAMILY == WINAPI_FAMILY_GAMES
+  return FALSE;
+#else
   OSVERSIONINFOEXW osverinfo;
   gboolean is_ver_checked = FALSE;
   gboolean is_type_checked = FALSE;
@@ -593,6 +596,7 @@ g_win32_check_windows_version (const gint major,
 #endif
 
   return is_ver_checked && is_type_checked;
+#endif
 }
 
 /**
@@ -715,6 +719,7 @@ g_win32_locale_filename_from_utf8 (const gchar *utf8filename)
 
   retval = special_wchar_to_locale_encoding (wname);
 
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   if (retval == NULL)
     {
       /* Conversion failed, so check if there is a 8.3 version, and use that. */
@@ -723,6 +728,7 @@ g_win32_locale_filename_from_utf8 (const gchar *utf8filename)
       if (GetShortPathNameW (wname, wshortname, G_N_ELEMENTS (wshortname)))
         retval = special_wchar_to_locale_encoding (wshortname);
     }
+#endif
 
   g_free (wname);
 
@@ -774,6 +780,10 @@ g_win32_get_command_line (void)
   LPWSTR *args;
   gint i, n;
 
+#if (WINAPI_FAMILY == WINAPI_FAMILY_GAMES)
+  result = g_new (gchar *, 1);
+  result[0] = NULL;
+#else
   args = CommandLineToArgvW (GetCommandLineW(), &n);
 
   result = g_new (gchar *, n + 1);
@@ -782,6 +792,7 @@ g_win32_get_command_line (void)
   result[i] = NULL;
 
   LocalFree (args);
+#endif
   return result;
 }
 
@@ -840,6 +851,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 void
 g_console_win32_init (void)
 {
+#if WINAPI_FAMILY != WINAPI_FAMILY_GAMES
   struct
     {
       gboolean     redirect;
@@ -1028,6 +1040,7 @@ g_console_win32_init (void)
 
       _close (new_fd);
     }
+#endif
 }
 
 /* This is a handle to the Vectored Exception Handler that

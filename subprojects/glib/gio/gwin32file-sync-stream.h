@@ -23,6 +23,8 @@
 
 #ifdef G_PLATFORM_WIN32
 
+#include <ObjIdl.h>
+
 typedef struct _GWin32FileSyncStream GWin32FileSyncStream;
 
 struct _GWin32FileSyncStream
