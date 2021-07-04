@@ -270,7 +270,7 @@ libavcodec_optional_sources = {
   'dds_decoder' : files('dds.c'),
   'derf_dpcm_decoder' : files('dpcm.c'),
   'dfa_decoder' : files('dfa.c'),
-  'dirac_decoder' : files('diracdec.c','dirac.c','diracdsp.c','diractab.c','dirac_arith.c','dirac_dwt.c','dirac_vlc.c'),
+#  'dirac_decoder' : files('diracdec.c','dirac.c','diracdsp.c','diractab.c','dirac_arith.c','dirac_dwt.c','dirac_vlc.c'),
   'dirac_parser' : files('dirac_parser.c'),
   'dnxhd_decoder' : files('dnxhddec.c','dnxhddata.c'),
   'dnxhd_demuxer' : files('dnxhddata.c'),

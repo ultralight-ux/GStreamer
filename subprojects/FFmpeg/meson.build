@@ -1164,7 +1164,7 @@ hwaccel_library_list = hwaccel_library_nonfree_list + [
 
 subsystem_list = [
   'dct',
-  'dwt',
+#  'dwt',
   'error_resilience',
   'faan',
   'fast_unaligned',

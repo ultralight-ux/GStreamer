@@ -84,7 +84,7 @@ extern AVCodec ff_cscd_decoder;
 extern AVCodec ff_cyuv_decoder;
 extern AVCodec ff_dds_decoder;
 extern AVCodec ff_dfa_decoder;
-extern AVCodec ff_dirac_decoder;
+//extern AVCodec ff_dirac_decoder;
 extern AVCodec ff_dnxhd_encoder;
 extern AVCodec ff_dnxhd_decoder;
 extern AVCodec ff_dpx_encoder;
