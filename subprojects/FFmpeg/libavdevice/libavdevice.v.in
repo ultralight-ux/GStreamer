@@ -1,7 +1,0 @@
-LIBAVDEVICE_@majorver@ {
-    global:
-        avdevice_*;
-        av_*;
-    local:
-        *;
-};

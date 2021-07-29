@@ -1,12 +1,12 @@
 project('opus', 'c',
-  version: run_command('meson/get-version.py', '--package-version', check: true).stdout().strip(),
+  version: '1.3.1',
   meson_version: '>=0.54.0',
   default_options: ['warning_level=2',
                     'c_std=gnu99',
                     'buildtype=debugoptimized'])
 
-libversion = run_command('meson/get-version.py', '--libtool-version', check: true).stdout().strip()
-macosversion = run_command('meson/get-version.py', '--darwin-version', check: true).stdout().strip()
+libversion = '1.3.1'
+macosversion = '1.3.1'
 
 cc = meson.get_compiler('c')
 host_system = host_machine.system()

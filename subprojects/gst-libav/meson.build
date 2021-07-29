@@ -137,7 +137,9 @@ if gst_dep.type_name() == 'internal'
 
     if not gst_proj.get_variable('gst_debug')
         message('GStreamer debug system is disabled')
-        add_project_arguments('-Wno-unused', language: 'c')
+        if cc.has_argument('-Wno-unused')
+            add_project_arguments('-Wno-unused', language: 'c')
+        endif
     else
         message('GStreamer debug system is enabled')
     endif
@@ -150,7 +152,9 @@ else
 #error "debugging disabled, make compiler fail"
 #endif''' , dependencies: gst_dep)
         message('GStreamer debug system is disabled')
-        add_project_arguments('-Wno-unused', language: 'c')
+        if cc.has_argument('-Wno-unused')
+            add_project_arguments('-Wno-unused', language: 'c')
+        endif
     else
         message('GStreamer debug system is enabled')
     endif

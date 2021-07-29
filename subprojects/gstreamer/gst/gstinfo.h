@@ -1499,6 +1499,15 @@ GST_TRACE (const char *format, ...)
 #  pragma GCC poison _gst_debug_category_new
 #endif
 
+/**
+ * GST_CAT_DEFAULT:
+ *
+ * Default gstreamer core debug log category. Please define your own.
+ */
+
+GST_API GstDebugCategory *	GST_CAT_DEFAULT;
+/* this symbol may not be used */
+
 #define _gst_debug_min GST_LEVEL_NONE
 
 #define gst_debug_set_default_threshold(level)		G_STMT_START{ }G_STMT_END
@@ -1521,9 +1530,14 @@ GST_TRACE (const char *format, ...)
 
 /* we are using dummy function prototypes here to eat ';' as these macros are
  * used outside of functions */
+/*
 #define GST_DEBUG_CATEGORY(var)				void _gst_debug_dummy_##var (void)
 #define GST_DEBUG_CATEGORY_EXTERN(var)			void _gst_debug_dummy_extern_##var (void)
 #define GST_DEBUG_CATEGORY_STATIC(var)			void _gst_debug_dummy_static_##var (void)
+*/
+#define GST_DEBUG_CATEGORY(cat) GstDebugCategory *cat = NULL
+#define GST_DEBUG_CATEGORY_EXTERN(cat) extern GstDebugCategory *cat
+#define GST_DEBUG_CATEGORY_STATIC(cat) static GstDebugCategory *cat = NULL
 
 #define GST_DEBUG_CATEGORY_INIT(var,name,color,desc)	G_STMT_START{ }G_STMT_END
 #define GST_DEBUG_CATEGORY_GET(var,name)		G_STMT_START{ }G_STMT_END

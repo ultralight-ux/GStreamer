@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include "gstvideotimecode.h"
+#include "gstvideosink.h"
 
 static void
 gst_video_time_code_gvalue_to_string (const GValue * tc_val, GValue * str_val);
@@ -611,6 +612,11 @@ gst_video_time_code_new (guint fps_n, guint fps_d, GDateTime * latest_daily_jam,
     GstVideoTimeCodeFlags flags, guint hours, guint minutes, guint seconds,
     guint frames, guint field_count)
 {
+    // FIXME: This is here to force MSVC linker to include this symbol since it seems to be stripping incorrectly.
+  GType foobar = gst_video_sink_get_type();
+  int foobar2 = (int)foobar;
+  foobar2++;
+  
   GstVideoTimeCode *tc;
 
   tc = g_new0 (GstVideoTimeCode, 1);

@@ -41,10 +41,19 @@ gboolean        gst_d3d11_ensure_element_data       (GstElement * element,
                                                      gint adapter,
                                                      GstD3D11Device ** device);
 
+#ifndef GST_DISABLE_GST_DEBUG
+GST_D3D11_API
+gboolean       _gst_d3d11_result_dbg                (HRESULT hr,
+                                                     GstD3D11Device * device,
+                                                     GstDebugCategory * cat,
+                                                     const gchar * file,
+                                                     const gchar * function,
+                                                     gint line);
+#endif
+
 GST_D3D11_API
 gboolean       _gst_d3d11_result                    (HRESULT hr,
                                                      GstD3D11Device * device,
-                                                     GstDebugCategory * cat,
                                                      const gchar * file,
                                                      const gchar * function,
                                                      gint line);
@@ -57,8 +66,13 @@ gboolean       _gst_d3d11_result                    (HRESULT hr,
  *
  * Since: 1.20
  */
+#ifndef GST_DISABLE_GST_DEBUG
 #define gst_d3d11_result(result,device) \
-    _gst_d3d11_result (result, device, GST_CAT_DEFAULT, __FILE__, GST_FUNCTION, __LINE__)
+    _gst_d3d11_result_dbg (result, device, GST_CAT_DEFAULT, __FILE__, GST_FUNCTION, __LINE__)
+#else
+#define gst_d3d11_result(result,device) \
+    _gst_d3d11_result (result, device, __FILE__, GST_FUNCTION, __LINE__)
+#endif
 
 G_END_DECLS
 

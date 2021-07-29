@@ -1,6 +1,0 @@
-LIBAVCODEC_@majorver@ {
-    global:
-        av*;
-    local:
-        *;
-};

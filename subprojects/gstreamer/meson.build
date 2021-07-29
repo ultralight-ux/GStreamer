@@ -436,7 +436,7 @@ if cc.has_header('execinfo.h')
 endif
 
 gst_debug = get_option('gst_debug')
-if not gst_debug
+if not gst_debug and cc.has_argument('-Wno-unused')
   add_project_arguments(['-Wno-unused'], language: 'c')
 endif
 

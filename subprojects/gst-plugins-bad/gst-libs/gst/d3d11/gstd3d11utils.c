@@ -367,8 +367,9 @@ gst_d3d11_ensure_element_data (GstElement * element, gint adapter,
   return TRUE;
 }
 
+#ifndef GST_DISABLE_GST_DEBUG
 gboolean
-_gst_d3d11_result (HRESULT hr, GstD3D11Device * device, GstDebugCategory * cat,
+_gst_d3d11_result_dbg (HRESULT hr, GstD3D11Device * device, GstDebugCategory * cat,
     const gchar * file, const gchar * function, gint line)
 {
 #ifndef GST_DISABLE_GST_DEBUG
@@ -399,4 +400,12 @@ _gst_d3d11_result (HRESULT hr, GstD3D11Device * device, GstDebugCategory * cat,
 #else
   return SUCCEEDED (hr);
 #endif
+}
+#endif
+
+gboolean
+_gst_d3d11_result (HRESULT hr, GstD3D11Device * device,
+    const gchar * file, const gchar * function, gint line)
+{
+  return SUCCEEDED (hr);
 }

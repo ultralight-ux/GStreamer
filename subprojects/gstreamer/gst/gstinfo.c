@@ -175,6 +175,8 @@ G_LOCK_DEFINE_STATIC (win_print_mutex);
 
 extern gboolean gst_is_initialized (void);
 
+GstDebugCategory *GST_CAT_DEFAULT = NULL;
+
 /* we want these symbols exported even if debug is disabled, to maintain
  * ABI compatibility. Unless GST_REMOVE_DISABLED is defined. */
 #if !defined(GST_DISABLE_GST_DEBUG) || !defined(GST_REMOVE_DISABLED)
@@ -183,8 +185,6 @@ extern gboolean gst_is_initialized (void);
  * it becomes enabled. */
 gboolean _gst_debug_enabled = FALSE;
 GstDebugLevel _gst_debug_min = GST_LEVEL_NONE;
-
-GstDebugCategory *GST_CAT_DEFAULT = NULL;
 
 GstDebugCategory *GST_CAT_GST_INIT = NULL;
 GstDebugCategory *GST_CAT_MEMORY = NULL;

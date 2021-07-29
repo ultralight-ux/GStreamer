@@ -391,7 +391,7 @@ endif
 if gst_dep.type_name() == 'internal'
     gst_proj = subproject('gstreamer')
 
-    if not gst_proj.get_variable('gst_debug')
+    if not gst_proj.get_variable('gst_debug') and cc.has_argument('-Wno-unused')
         message('GStreamer debug system is disabled')
         add_project_arguments('-Wno-unused', language: 'c')
     else
@@ -406,7 +406,9 @@ else
 #error "debugging disabled, make compiler fail"
 #endif''' , dependencies: gst_dep)
         message('GStreamer debug system is disabled')
-        add_project_arguments('-Wno-unused', language: 'c')
+        if cc.has_argument('-Wno-unused')
+            add_project_arguments('-Wno-unused', language: 'c')
+        endif
     else
         message('GStreamer debug system is enabled')
     endif

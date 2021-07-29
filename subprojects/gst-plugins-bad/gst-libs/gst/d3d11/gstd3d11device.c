@@ -68,11 +68,13 @@ static DXGIGetDebugInterface_t GstDXGIGetDebugInterface = NULL;
 
 #endif
 
+#ifndef GST_DISABLE_GST_DEBUG
 #if (HAVE_D3D11SDKLAYERS_H || HAVE_DXGIDEBUG_H)
 GST_DEBUG_CATEGORY_STATIC (gst_d3d11_debug_layer_debug);
 #endif
 GST_DEBUG_CATEGORY_STATIC (gst_d3d11_device_debug);
 #define GST_CAT_DEFAULT gst_d3d11_device_debug
+#endif
 
 enum
 {
@@ -129,11 +131,13 @@ struct _GstD3D11DevicePrivate
 static void
 do_debug_init (void)
 {
+#ifndef GST_DISABLE_GST_DEBUG
   GST_DEBUG_CATEGORY_INIT (gst_d3d11_device_debug,
       "d3d11device", 0, "d3d11 device object");
 #if defined(HAVE_D3D11SDKLAYERS_H) || defined(HAVE_DXGIDEBUG_H)
   GST_DEBUG_CATEGORY_INIT (gst_d3d11_debug_layer_debug,
       "d3d11debuglayer", 0, "native d3d11 and dxgi debug");
+#endif
 #endif
 }
 
