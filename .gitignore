@@ -3,7 +3,6 @@ cscope.in.out
 cscope.out
 cscope.po.out
 __pycache__
-meson/
 subprojects/packagecache/
 prefix/
 pygobject

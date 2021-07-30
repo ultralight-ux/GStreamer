@@ -25,10 +25,10 @@ vorbisfile_sources = ['vorbisfile.c']
 
 vorbisenc_sources = ['vorbisenc.c']
 
-if host_machine.system() == 'windows'
+#if host_machine.system() == 'windows'
     # Seems a bit weird, but this is what upstream does.
     vorbis_sources += vorbisenc_sources
-endif
+#endif
 
 math_dep = meson.get_compiler('c').find_library('m', required: false)
 
