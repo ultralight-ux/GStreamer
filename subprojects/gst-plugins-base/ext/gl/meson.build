@@ -77,8 +77,8 @@ if graphene_dep.found()
   ]
 endif
 
-png_dep = dependency('libpng', version : '>=1.0', required : get_option('gl-png'))
-jpeg_dep = dependency('libjpeg', required : get_option('gl-jpeg'))
+png_dep = dependency('libpngdummy', version : '>=1.0', required : get_option('gl-png'))
+jpeg_dep = dependency('libjpegdummy', required : get_option('gl-jpeg'))
 
 if png_dep.found()
   optional_deps += png_dep

@@ -31,10 +31,18 @@ if host_machine.system() == 'windows'
     include_directories : ffmpeg_inc,
     version : '56.70.100')
 else
-  libavcodec_dep = declare_dependency(
-    link_args : ['-L' + ffmpeg_lib_dir, '-lavcodec', '-lswresample', '-liconv'],
-    include_directories : ffmpeg_inc,
-    version : '58.134.100')
+
+  if host_machine.system() == 'darwin'
+    libavcodec_dep = declare_dependency(
+      link_args : ['-L' + ffmpeg_lib_dir, '-lavcodec', '-lswresample', '-liconv'],
+      include_directories : ffmpeg_inc,
+      version : '58.134.100')
+  else
+    libavcodec_dep = declare_dependency(
+      link_args : ['-L' + ffmpeg_lib_dir, '-lavcodec', '-lswresample'],
+      include_directories : ffmpeg_inc,
+      version : '58.134.100')
+  endif
 
   libavformat_dep = declare_dependency(
     link_args : ['-L' + ffmpeg_lib_dir, '-lavformat'],

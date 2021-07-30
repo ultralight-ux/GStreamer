@@ -4,7 +4,7 @@ png_sources = [
   'gstpngdec.c',
 ]
 
-libpng_dep = dependency('libpng', version : '>=1.2', required : get_option('png'))
+libpng_dep = dependency('libpngdummy', version : '>=1.2', required : get_option('png'))
 
 if libpng_dep.found()
   gstpng = library('gstpng',
