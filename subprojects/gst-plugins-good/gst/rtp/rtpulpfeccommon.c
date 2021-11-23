@@ -118,7 +118,7 @@ fec_hdr_get_timestamp_recovery (RtpUlpFecHeader const *fec_hdr)
 }
 
 static void
-_xor_mem (guint8 * restrict dst, const guint8 * restrict src, gsize length)
+_xor_mem (guint8 * dst, const guint8 * src, gsize length)
 {
   guint i;
 

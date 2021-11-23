@@ -233,7 +233,7 @@ free_fec_packet (FecPacket * packet)
 }
 
 static void
-_xor_mem (guint8 * restrict dst, const guint8 * restrict src, gsize length)
+_xor_mem (guint8 * dst, const guint8 * src, gsize length)
 {
   guint i;
 

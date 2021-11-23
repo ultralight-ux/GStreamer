@@ -1,0 +1,195 @@
+cmake_minimum_required(VERSION 3.15.0)
+
+set(CMAKE_BUILD_TYPE "Release"                            CACHE STRING  "Choose the type of build.")
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/out  CACHE PATH    "The path to install to.")
+# TODO: We need to handle building static GStreamer/Glib
+set(UL_LIBRARY_LINKAGE "dynamic"                          CACHE STRING  "The type of library to build (either dynamic or static).")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL"         CACHE STRING  "(Windows only) The MSVC runtime library to use.")
+
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+set_property(CACHE UL_LIBRARY_LINKAGE PROPERTY STRINGS "dynamic" "static")
+set_property(CACHE CMAKE_MSVC_RUNTIME_LIBRARY PROPERTY STRINGS "MultiThreaded" "MultiThreadedDLL" "MultiThreadedDebug" "MultiThreadedDebugDLL")
+
+project(GStreamer C CXX)
+
+# Define which plugins to disable in GStreamer
+set(DISABLED_PLUGINS
+    cairo:freetype
+    devtools
+    examples
+    FFmpeg:libfreetype
+    ges
+    gst-examples
+    gst-plugins-bad:gl
+    gst-plugins-bad:glib-asserts
+    gst-plugins-bad:glib-checks
+    gst-plugins-bad:gobject-cast-checks
+    gst-plugins-bad:mediafoundation
+    gst-plugins-bad:openh264
+    gst-plugins-bad:openjpeg
+    gst-plugins-bad:tests
+    gst-plugins-bad:wasapi2
+    gst-plugins-base:gl
+    gst-plugins-base:glib-asserts
+    gst-plugins-base:glib-checks
+    gst-plugins-base:gobject-cast-checks
+    gst-plugins-base:pango
+    gst-plugins-good:cairo
+    gst-plugins-good:dv
+    gst-plugins-good:glib-asserts
+    gst-plugins-good:glib-checks
+    gst-plugins-good:gobject-cast-checks
+    gst-plugins-good:soup
+    gst-plugins-good:tests
+    gstreamer:extra-checks
+    gstreamer:glib-asserts
+    gstreamer:glib-checks
+    introspection
+    python
+    qt5
+    tests
+    tls
+    ugly
+)
+
+set(C_ARGS
+    -DFFI_STATIC_BUILD
+    -DG_INTL_STATIC_COMPILATION
+    -DLIBXML_STATIC
+    -DOPJ_STATIC
+    -DORC_STATIC_COMPILATION
+    -DPCRE_STATIC
+    -DPSL_STATIC
+)
+
+set(MESON_FLAGS
+    --default-library=static
+    --force-fallback-for=glib,libffi
+    --wrap-mode=nodownload
+    -Ddebug=false
+    -Dglib:default_library=shared
+    -Dglib:tests=false
+    -Dgst-full-version-script=""
+    -Dgstreamer:gst_debug=false
+    -Dlibsoup:tests=false
+    -Doptimization=s
+)
+
+set(GSTREAMER_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "Location of 'GStreamer'")
+set(GSTREAMER_BUILD_DIR "${CMAKE_BINARY_DIR}/gstreamer")
+set(GSTREAMER_INSTALL_DIR "${GSTREAMER_BUILD_DIR}/out")
+set(FFMPEG_INSTALL_PATH "${GSTREAMER_DIR}/deps/ffmpeg" CACHE PATH "Location of built 'FFmpeg'")
+
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set(GSTREAMER_LIBNAME "libgstreamer-full-1.0.so")
+elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    set(GSTREAMER_LIBNAME "libgstreamer-full-1.0.dylib")
+elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    set(GSTREAMER_LIBNAME "gstreamer-full-1.0.dll")
+else ()
+    message(FATAL_ERROR "Unhandled target OS: '${CMAKE_SYSTEM_NAME}'")
+endif ()
+
+set(MESON_ARGS "--prefix=${GSTREAMER_INSTALL_DIR} -DFFmpeg:installpath=${FFMPEG_INSTALL_PATH}")
+
+foreach(flag ${MESON_FLAGS})
+    set(MESON_ARGS "${MESON_ARGS} ${flag}")
+endforeach()
+
+string (REPLACE ";" " " C_ARGS_STR "${C_ARGS}")
+set(MESON_ARGS "${MESON_ARGS} -Dc_args=\"${C_ARGS_STR}\" -Dcpp_args=\"${C_ARGS_STR}\"")
+
+foreach(plugin ${DISABLED_PLUGINS})
+    set(MESON_ARGS "${MESON_ARGS} -D${plugin}=disabled")
+endforeach()
+
+if (CMAKE_SYSTEM_NAME MATCHES "Windows") 
+    if (CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL "MultiThreaded")
+        set(MESON_ARGS "${MESON_ARGS} -Db_vscrt=mt")
+    elseif (CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL "MultiThreadedDLL")
+        set(MESON_ARGS "${MESON_ARGS} -Db_vscrt=md")
+    elseif(CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL "MultiThreadedDebug")
+        set(MESON_ARGS "${MESON_ARGS} -Db_vscrt=mtd")
+    elseif(CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL "MultiThreadedDebugDLL")
+        set(MESON_ARGS "${MESON_ARGS} -Db_vscrt=mdd")
+    else()
+        message(FATAL_ERROR "Unknown MSVC runtime library: '${CMAKE_MSVC_RUNTIME_LIBRARY}'")
+    endif()
+endif ()
+
+add_custom_command(OUTPUT "${GSTREAMER_BUILD_DIR}/build.ninja"
+                    COMMAND meson ${MESON_ARGS} ${GSTREAMER_BUILD_DIR}
+                    WORKING_DIRECTORY "${GSTREAMER_DIR}"
+                    COMMENT "Configuring GStreamer.")
+
+add_custom_command(OUTPUT "${GSTREAMER_BUILD_DIR}/${GSTREAMER_LIBNAME}"
+                    COMMAND ninja
+                    DEPENDS "${GSTREAMER_BUILD_DIR}/build.ninja"
+                    WORKING_DIRECTORY "${GSTREAMER_BUILD_DIR}"
+                    COMMENT "Building GStreamer.")
+
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")       
+    # We need to copy intl.lib over on Windows to avoid an install error  
+    file(TO_NATIVE_PATH "${GSTREAMER_DIR}/data/intl.lib" INTL_LIB_PATH)           
+    file(TO_NATIVE_PATH "${GSTREAMER_BUILD_DIR}/subprojects/proxy-libintl/" INTL_LIB_DEST)
+    add_custom_command(OUTPUT "${GSTREAMER_BUILD_DIR}/copy_files.stamp"
+                        COMMAND XCOPY /Q /Y "${INTL_LIB_PATH}" "${INTL_LIB_DEST}"
+                        COMMAND ${CMAKE_COMMAND} -E touch copy_files.stamp
+                        DEPENDS "${GSTREAMER_BUILD_DIR}/${GSTREAMER_LIBNAME}"
+                        WORKING_DIRECTORY "${GSTREAMER_BUILD_DIR}"
+                        COMMENT "Copying files."
+                        VERBATIM) 
+else()
+    # Dummy build step
+    add_custom_command(OUTPUT "${GSTREAMER_BUILD_DIR}/copy_files.stamp"
+                        COMMAND ${CMAKE_COMMAND} -E touch copy_files.stamp
+                        DEPENDS "${GSTREAMER_BUILD_DIR}/${GSTREAMER_LIBNAME}"
+                        WORKING_DIRECTORY "${GSTREAMER_BUILD_DIR}"
+                        COMMENT "Copying files.") 
+endif()                                      
+
+add_custom_command(OUTPUT "${GSTREAMER_INSTALL_DIR}/include/gstreamer-1.0/gst/gst.h"
+                    COMMAND ninja install
+                    DEPENDS "${GSTREAMER_BUILD_DIR}/copy_files.stamp"
+                    WORKING_DIRECTORY "${GSTREAMER_BUILD_DIR}"
+                    COMMENT "Installing GStreamer.")
+
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    # We need to update the rpath for our dynamic libraries
+    set(INSTALL_LIBPATH "${GSTREAMER_INSTALL_DIR}/lib/x86_64-linux-gnu")
+    
+    add_custom_command(OUTPUT "${INSTALL_LIBPATH}/update_rpath.stamp"
+                        COMMAND ${GSTREAMER_DIR}/update_rpath_linux.sh
+                        COMMAND ${CMAKE_COMMAND} -E touch update_rpath.stamp
+                        DEPENDS "${GSTREAMER_INSTALL_DIR}/include/gstreamer-1.0/gst/gst.h"
+                        WORKING_DIRECTORY "${INSTALL_LIBPATH}"
+                        COMMENT "Updating RPath.")
+
+    add_custom_target(GStreamer ALL DEPENDS "${INSTALL_LIBPATH}/update_rpath.stamp")
+    INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/include" DESTINATION ".")
+    INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/bin" DESTINATION ".")
+    INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/lib/x86_64-linux-gnu" DESTINATION "./lib" FILES_MATCHING PATTERN "*.so")
+    INSTALL(FILES "${GSTREAMER_INSTALL_DIR}/lib/glib-2.0/include/glibconfig.h" DESTINATION "include/")
+elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    # We need to update the rpath for our dynamic libraries
+    set(INSTALL_LIBPATH "${GSTREAMER_INSTALL_DIR}/lib")
+    
+    add_custom_command(OUTPUT "${INSTALL_LIBPATH}/update_rpath.stamp"
+                        COMMAND ${GSTREAMER_DIR}/update_rpath_macos.sh
+                        COMMAND ${CMAKE_COMMAND} -E touch update_rpath.stamp
+                        DEPENDS "${GSTREAMER_INSTALL_DIR}/include/gstreamer-1.0/gst/gst.h"
+                        WORKING_DIRECTORY "${INSTALL_LIBPATH}"
+                        COMMENT "Updating RPath.")
+
+    add_custom_target(GStreamer ALL DEPENDS "${INSTALL_LIBPATH}/update_rpath.stamp")
+    INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/include" DESTINATION ".")
+    INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/bin" DESTINATION ".")
+    INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/lib" DESTINATION "." FILES_MATCHING PATTERN "*.dylib")
+    INSTALL(FILES "${GSTREAMER_INSTALL_DIR}/lib/glib-2.0/include/glibconfig.h" DESTINATION "include/")
+elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    add_custom_target(GStreamer ALL DEPENDS "${GSTREAMER_INSTALL_DIR}/include/gstreamer-1.0/gst/gst.h")
+    INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/include" DESTINATION ".")
+    INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/bin" DESTINATION ".")
+    INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/lib" DESTINATION "." FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll")
+    INSTALL(FILES "${GSTREAMER_INSTALL_DIR}/lib/glib-2.0/include/glibconfig.h" DESTINATION "include/")
+endif ()
