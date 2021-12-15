@@ -1,16 +1,11 @@
 cmake_minimum_required(VERSION 3.15.0)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
-set(CMAKE_BUILD_TYPE "Release"                            CACHE STRING  "Choose the type of build.")
-set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/out  CACHE PATH    "The path to install to.")
-# TODO: We need to handle building static GStreamer/Glib
-set(UL_LIBRARY_LINKAGE "dynamic"                          CACHE STRING  "The type of library to build (either dynamic or static).")
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL"         CACHE STRING  "(Windows only) The MSVC runtime library to use.")
-
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-set_property(CACHE UL_LIBRARY_LINKAGE PROPERTY STRINGS "dynamic" "static")
-set_property(CACHE CMAKE_MSVC_RUNTIME_LIBRARY PROPERTY STRINGS "MultiThreaded" "MultiThreadedDLL" "MultiThreadedDebug" "MultiThreadedDebugDLL")
+include(common)
 
 project(GStreamer C CXX)
+
+include(Deps.cmake)
 
 # Define which plugins to disable in GStreamer
 set(DISABLED_PLUGINS
@@ -60,7 +55,10 @@ set(C_ARGS
     -DORC_STATIC_COMPILATION
     -DPCRE_STATIC
     -DPSL_STATIC
+    ${UL_GSTREAMER_C_FLAGS}
 )
+
+set(LINK_ARGS ${UL_GSTREAMER_LINK_FLAGS})
 
 set(MESON_FLAGS
     --default-library=static
@@ -73,12 +71,12 @@ set(MESON_FLAGS
     -Dgstreamer:gst_debug=false
     -Dlibsoup:tests=false
     -Doptimization=s
+    ${UL_GSTREAMER_MESON_FLAGS}
 )
 
 set(GSTREAMER_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "Location of 'GStreamer'")
 set(GSTREAMER_BUILD_DIR "${CMAKE_BINARY_DIR}/gstreamer")
 set(GSTREAMER_INSTALL_DIR "${GSTREAMER_BUILD_DIR}/out")
-set(FFMPEG_INSTALL_PATH "${GSTREAMER_DIR}/deps/ffmpeg" CACHE PATH "Location of built 'FFmpeg'")
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(GSTREAMER_LIBNAME "libgstreamer-full-1.0.so")
@@ -90,7 +88,7 @@ else ()
     message(FATAL_ERROR "Unhandled target OS: '${CMAKE_SYSTEM_NAME}'")
 endif ()
 
-set(MESON_ARGS "--prefix=${GSTREAMER_INSTALL_DIR} -DFFmpeg:installpath=${FFMPEG_INSTALL_PATH}")
+set(MESON_ARGS "--prefix=${GSTREAMER_INSTALL_DIR} -DFFmpeg:installpath=${FFMPEG_DIR}")
 
 foreach(flag ${MESON_FLAGS})
     set(MESON_ARGS "${MESON_ARGS} ${flag}")
@@ -99,22 +97,18 @@ endforeach()
 string (REPLACE ";" " " C_ARGS_STR "${C_ARGS}")
 set(MESON_ARGS "${MESON_ARGS} -Dc_args=\"${C_ARGS_STR}\" -Dcpp_args=\"${C_ARGS_STR}\"")
 
+if (LINK_ARGS)
+    string (REPLACE ";" " " LINK_ARGS_STR "${LINK_ARGS}")
+    set(MESON_ARGS "${MESON_ARGS} -Dc_link_args=\"${LINK_ARGS_STR}\" -Dcpp_link_args=\"${LINK_ARGS_STR}\"")
+endif ()
+
 foreach(plugin ${DISABLED_PLUGINS})
     set(MESON_ARGS "${MESON_ARGS} -D${plugin}=disabled")
 endforeach()
 
-if (CMAKE_SYSTEM_NAME MATCHES "Windows") 
-    if (CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL "MultiThreaded")
-        set(MESON_ARGS "${MESON_ARGS} -Db_vscrt=mt")
-    elseif (CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL "MultiThreadedDLL")
-        set(MESON_ARGS "${MESON_ARGS} -Db_vscrt=md")
-    elseif(CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL "MultiThreadedDebug")
-        set(MESON_ARGS "${MESON_ARGS} -Db_vscrt=mtd")
-    elseif(CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL "MultiThreadedDebugDLL")
-        set(MESON_ARGS "${MESON_ARGS} -Db_vscrt=mdd")
-    else()
-        message(FATAL_ERROR "Unknown MSVC runtime library: '${CMAKE_MSVC_RUNTIME_LIBRARY}'")
-    endif()
+# Platform-specific args should be defined in platform toolchain
+if (UL_GSTREAMER_ARGS)
+    set(MESON_ARGS "${MESON_ARGS} ${UL_GSTREAMER_ARGS}")
 endif ()
 
 add_custom_command(OUTPUT "${GSTREAMER_BUILD_DIR}/build.ninja"
@@ -193,3 +187,7 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
     INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/lib" DESTINATION "." FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll")
     INSTALL(FILES "${GSTREAMER_INSTALL_DIR}/lib/glib-2.0/include/glibconfig.h" DESTINATION "include/")
 endif ()
+
+add_dependencies(GStreamer FFmpegBin)
+
+include(CreateSDK.cmake)

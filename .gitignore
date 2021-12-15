@@ -1,10 +1,6 @@
-*build*/
-cscope.in.out
-cscope.out
-cscope.po.out
-__pycache__
-subprojects/packagecache/
-prefix/
-pygobject
-.gdbinit
-deps/
+# Ignore build/bin directories
+[Bb]uild/
+build_*/
+.DS_Store
+/deps/
+.directory
