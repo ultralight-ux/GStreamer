@@ -47,6 +47,10 @@ set(DISABLED_PLUGINS
     ugly
 )
 
+if (NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
+    list(APPEND DISABLED_PLUGINS gst-plugins-bad:tinyalsa)
+endif ()
+
 set(C_ARGS
     -DFFI_STATIC_BUILD
     -DG_INTL_STATIC_COMPILATION
