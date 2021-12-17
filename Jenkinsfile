@@ -12,7 +12,7 @@ pipeline {
           steps {
             sh '''
                # Setup environment
-               source ~/.bash_profile
+               . ~/.bash_profile
                export PATH="/usr/local/bin:$PATH"
 
                # Build Release
@@ -65,7 +65,7 @@ pipeline {
           steps {
             sh '''     
                # Build Release
-               source ~/.bashrc
+               . ~/.bashrc
                mkdir -p build
                cd build
                export CC=/usr/bin/clang
