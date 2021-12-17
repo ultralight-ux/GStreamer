@@ -67,7 +67,6 @@ set(LINK_ARGS ${UL_GSTREAMER_LINK_FLAGS})
 set(MESON_FLAGS
     --default-library=static
     --force-fallback-for=glib,libffi
-    --wrap-mode=nodownload
     -Ddebug=false
     -Dglib:default_library=shared
     -Dglib:tests=false
@@ -77,6 +76,10 @@ set(MESON_FLAGS
     -Doptimization=s
     ${UL_GSTREAMER_MESON_FLAGS}
 )
+
+if (NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    list(APPEND MESON_FLAGS --wrap-mode=nodownload)
+endif ()
 
 set(GSTREAMER_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "Location of 'GStreamer'")
 set(GSTREAMER_BUILD_DIR "${CMAKE_BINARY_DIR}/gstreamer")

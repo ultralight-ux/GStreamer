@@ -66,6 +66,7 @@ pipeline {
             sh '''     
                # Build Release
                . ~/.bashrc
+               export PATH=/home/jenkins/.local/bin:$PATH
                mkdir -p build
                cd build
                export CC=/usr/bin/clang
