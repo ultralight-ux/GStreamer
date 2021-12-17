@@ -24,7 +24,6 @@ set(DISABLED_PLUGINS
     gst-plugins-bad:openjpeg
     gst-plugins-bad:tests
     gst-plugins-bad:wasapi2
-    gst-plugins-base:gl
     gst-plugins-base:glib-asserts
     gst-plugins-base:glib-checks
     gst-plugins-base:gobject-cast-checks
@@ -79,6 +78,7 @@ set(MESON_FLAGS
 
 if (NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
     list(APPEND MESON_FLAGS --wrap-mode=nodownload)
+    list(APPEND DISABLED_PLUGINS gst-plugins-base:gl)
 endif ()
 
 set(GSTREAMER_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "Location of 'GStreamer'")
@@ -97,11 +97,17 @@ endif ()
 
 set(MESON_ARGS meson --prefix="${GSTREAMER_INSTALL_DIR}" -DFFmpeg:installpath="${FFMPEG_DIR}" ${MESON_FLAGS})
 
-string (REPLACE ";" " " C_ARGS_STR "${C_ARGS}")
+foreach(var ${C_ARGS})
+    set(C_ARGS_STR "${C_ARGS_STR} ${var}")
+endif ()
+
 list(APPEND MESON_ARGS -Dc_args="${C_ARGS_STR}" -Dcpp_args="${C_ARGS_STR}")
 
 if (LINK_ARGS)
-    string (REPLACE ";" " " LINK_ARGS_STR "${LINK_ARGS}")
+    foreach(var ${LINK_ARGS})
+        set(LINK_ARGS_STR "${LINK_ARGS_STR} ${var}")
+    endif ()
+
     list(APPEND MESON_ARGS -Dc_link_args="${LINK_ARGS_STR}" -Dcpp_link_args="${LINK_ARGS_STR}")
 endif ()
 
