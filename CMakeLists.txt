@@ -168,7 +168,7 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/include" DESTINATION ".")
     INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/bin" DESTINATION ".")
     INSTALL(DIRECTORY "${GSTREAMER_INSTALL_DIR}/lib/x86_64-linux-gnu" DESTINATION "./lib" FILES_MATCHING PATTERN "*.so")
-    INSTALL(FILES "${GSTREAMER_INSTALL_DIR}/lib/glib-2.0/include/glibconfig.h" DESTINATION "include/")
+    INSTALL(FILES "${GSTREAMER_INSTALL_DIR}/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h" DESTINATION "include/")
 elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
     # We need to update the rpath for our dynamic libraries
     set(INSTALL_LIBPATH "${GSTREAMER_INSTALL_DIR}/lib")
