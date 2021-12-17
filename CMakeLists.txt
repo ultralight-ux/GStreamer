@@ -95,18 +95,20 @@ else ()
     message(FATAL_ERROR "Unhandled target OS: '${CMAKE_SYSTEM_NAME}'")
 endif ()
 
+function(JOIN VALUES GLUE OUTPUT)
+  string (REGEX REPLACE "([^\\]|^);" "\\1${GLUE}" _TMP_STR "${VALUES}")
+  string (REGEX REPLACE "[\\](.)" "\\1" _TMP_STR "${_TMP_STR}") #fixes escaping
+  set (${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
+endfunction()
+
 set(MESON_ARGS meson --prefix="${GSTREAMER_INSTALL_DIR}" -DFFmpeg:installpath="${FFMPEG_DIR}" ${MESON_FLAGS})
 
-foreach(var ${C_ARGS})
-    set(C_ARGS_STR "${C_ARGS_STR} ${var}")
-endforeach ()
+JOIN("${C_ARGS}" " " C_ARGS_STR)
 
 list(APPEND MESON_ARGS -Dc_args="${C_ARGS_STR}" -Dcpp_args="${C_ARGS_STR}")
 
 if (LINK_ARGS)
-    foreach(var ${LINK_ARGS})
-        set(LINK_ARGS_STR "${LINK_ARGS_STR} ${var}")
-    endforeach ()
+    JOIN("${LINK_ARGS}" " " LINK_ARGS_STR)
 
     list(APPEND MESON_ARGS -Dc_link_args="${LINK_ARGS_STR}" -Dcpp_link_args="${LINK_ARGS_STR}")
 endif ()
