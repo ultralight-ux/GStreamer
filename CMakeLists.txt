@@ -92,7 +92,7 @@ else ()
     message(FATAL_ERROR "Unhandled target OS: '${CMAKE_SYSTEM_NAME}'")
 endif ()
 
-set(MESON_ARGS "--prefix=\"${GSTREAMER_INSTALL_DIR}\" -DFFmpeg:installpath=${FFMPEG_DIR}")
+set(MESON_ARGS "--prefix=\"${GSTREAMER_INSTALL_DIR}\" -DFFmpeg:installpath=\"${FFMPEG_DIR}\"")
 
 foreach(flag ${MESON_FLAGS})
     set(MESON_ARGS "${MESON_ARGS} ${flag}")
@@ -118,7 +118,8 @@ endif ()
 add_custom_command(OUTPUT "${GSTREAMER_BUILD_DIR}/build.ninja"
                     COMMAND meson ${MESON_ARGS} ${GSTREAMER_BUILD_DIR}
                     WORKING_DIRECTORY "${GSTREAMER_DIR}"
-                    COMMENT "Configuring GStreamer.")
+                    COMMENT "Configuring GStreamer."
+                    VERBATIM)
 
 add_custom_command(OUTPUT "${GSTREAMER_BUILD_DIR}/${GSTREAMER_LIBNAME}"
                     COMMAND ninja
