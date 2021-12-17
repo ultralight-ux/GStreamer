@@ -38,7 +38,7 @@ export PATH="/usr/local/opt/bison/bin:$PATH"
 To get everything on Linux, just type the following:
  
 ```
-sudo apt install cmake meson ninja-build pcre bison
+sudo apt install cmake meson ninja-build libpcre3-dev bison flex patchelf
 ```
 
 ## Building from source
