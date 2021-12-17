@@ -92,34 +92,32 @@ else ()
     message(FATAL_ERROR "Unhandled target OS: '${CMAKE_SYSTEM_NAME}'")
 endif ()
 
-set(MESON_ARGS "--prefix=\"${GSTREAMER_INSTALL_DIR}\" -DFFmpeg:installpath=\"${FFMPEG_DIR}\"")
-
-foreach(flag ${MESON_FLAGS})
-    set(MESON_ARGS "${MESON_ARGS} ${flag}")
-endforeach()
+set(MESON_ARGS meson --prefix="${GSTREAMER_INSTALL_DIR}" -DFFmpeg:installpath="${FFMPEG_DIR}" ${MESON_FLAGS})
 
 string (REPLACE ";" " " C_ARGS_STR "${C_ARGS}")
-set(MESON_ARGS "${MESON_ARGS} -Dc_args=\"${C_ARGS_STR}\" -Dcpp_args=\"${C_ARGS_STR}\"")
+list(APPEND MESON_ARGS -Dc_args="${C_ARGS_STR}" -Dcpp_args="${C_ARGS_STR}")
 
 if (LINK_ARGS)
     string (REPLACE ";" " " LINK_ARGS_STR "${LINK_ARGS}")
-    set(MESON_ARGS "${MESON_ARGS} -Dc_link_args=\"${LINK_ARGS_STR}\" -Dcpp_link_args=\"${LINK_ARGS_STR}\"")
+    list(APPEND MESON_ARGS -Dc_link_args="${LINK_ARGS_STR}" -Dcpp_link_args="${LINK_ARGS_STR}")
 endif ()
 
 foreach(plugin ${DISABLED_PLUGINS})
-    set(MESON_ARGS "${MESON_ARGS} -D${plugin}=disabled")
+    list(APPEND MESON_ARGS -D${plugin}=disabled)
 endforeach()
 
 # Platform-specific args should be defined in platform toolchain
 if (UL_GSTREAMER_ARGS)
-    set(MESON_ARGS "${MESON_ARGS} ${UL_GSTREAMER_ARGS}")
+    list(APPEND MESON_ARGS ${UL_GSTREAMER_ARGS})
 endif ()
 
+list(APPEND MESON_ARGS ${GSTREAMER_BUILD_DIR})
+
 add_custom_command(OUTPUT "${GSTREAMER_BUILD_DIR}/build.ninja"
-                    COMMAND meson ${MESON_ARGS} ${GSTREAMER_BUILD_DIR}
+                    COMMAND ${MESON_ARGS}
                     WORKING_DIRECTORY "${GSTREAMER_DIR}"
                     COMMENT "Configuring GStreamer."
-                    VERBATIM)
+                    )
 
 add_custom_command(OUTPUT "${GSTREAMER_BUILD_DIR}/${GSTREAMER_LIBNAME}"
                     COMMAND ninja
