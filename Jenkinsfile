@@ -10,9 +10,9 @@ pipeline {
             }
           }
           steps {
-            sleep 5
             sh '''
                # Setup environment
+               source ~/.bash_profile
                export PATH="/usr/local/bin:$PATH"
 
                # Build Release
@@ -36,7 +36,6 @@ pipeline {
             }
           }
           steps {
-            sleep 5
             bat '''
                rem Setup environment
                call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat" amd64
@@ -64,9 +63,9 @@ pipeline {
             }
           }
           steps {
-            sleep 5
             sh '''     
                # Build Release
+               source ~/.bashrc
                mkdir -p build
                cd build
                export CC=/usr/bin/clang
