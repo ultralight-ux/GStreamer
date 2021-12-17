@@ -99,14 +99,14 @@ set(MESON_ARGS meson --prefix="${GSTREAMER_INSTALL_DIR}" -DFFmpeg:installpath="$
 
 foreach(var ${C_ARGS})
     set(C_ARGS_STR "${C_ARGS_STR} ${var}")
-endif ()
+endforeach ()
 
 list(APPEND MESON_ARGS -Dc_args="${C_ARGS_STR}" -Dcpp_args="${C_ARGS_STR}")
 
 if (LINK_ARGS)
     foreach(var ${LINK_ARGS})
         set(LINK_ARGS_STR "${LINK_ARGS_STR} ${var}")
-    endif ()
+    endforeach ()
 
     list(APPEND MESON_ARGS -Dc_link_args="${LINK_ARGS_STR}" -Dcpp_link_args="${LINK_ARGS_STR}")
 endif ()
