@@ -12,7 +12,6 @@ set(DISABLED_PLUGINS
     cairo:freetype
     devtools
     examples
-    FFmpeg:libfreetype
     ges
     gst-examples
     gst-plugins-bad:gl
