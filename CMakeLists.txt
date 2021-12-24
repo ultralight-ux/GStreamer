@@ -91,7 +91,9 @@ function(JOIN VALUES GLUE OUTPUT)
   set (${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
 endfunction()
 
-set(MESON_ARGS meson --prefix="${GSTREAMER_INSTALL_DIR}" -DFFmpeg:installpath="${FFMPEG_DIR}" ${MESON_FLAGS})
+file(RELATIVE_PATH RELATIVE_FFMPEG_DIR ${CMAKE_CURRENT_LIST_DIR}/subprojects/FFmpeg ${FFMPEG_DIR})
+
+set(MESON_ARGS meson --prefix="${GSTREAMER_INSTALL_DIR}" -DFFmpeg:installpath="${RELATIVE_FFMPEG_DIR}" ${MESON_FLAGS})
 
 JOIN("${C_ARGS}" " " C_ARGS_STR)
 
