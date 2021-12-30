@@ -2,7 +2,9 @@ project('FFmpeg', 'c', version : '4.4.0')
 
 ffmpeg_path = get_option('installpath')
 ffmpeg_include_path = ffmpeg_path / 'include'
-ffmpeg_lib_path = ffmpeg_path / 'lib'
+
+dir_base = meson.current_source_dir()
+ffmpeg_lib_path = join_paths(join_paths(dir_base, ffmpeg_path), 'lib')
 
 ffmpeg_inc = [
   include_directories(
