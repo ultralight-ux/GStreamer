@@ -56,15 +56,23 @@ set(LINK_ARGS ${UL_GSTREAMER_LINK_FLAGS})
 set(MESON_FLAGS
     --default-library=static
     --force-fallback-for=glib,libffi
-    -Ddebug=false
     -Dglib:default_library=shared
     -Dglib:tests=false
     -Dgst-full-version-script=""
-    -Dgstreamer:gst_debug=false
     -Dlibsoup:tests=false
-    -Doptimization=s
     ${UL_GSTREAMER_MESON_FLAGS}
 )
+
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    list(APPEND MESON_FLAGS --buildtype=debug)
+elseif (CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    list(APPEND MESON_FLAGS --buildtype=debugoptimized)
+else ()
+    list(APPEND MESON_FLAGS -Ddebug=false
+                            -Doptimization=s
+                            -Dgstreamer:gst_debug=false
+    )
+endif ()
 
 if (NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
     list(APPEND MESON_FLAGS --wrap-mode=nodownload)
