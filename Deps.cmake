@@ -16,7 +16,7 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
     set(PLATFORM "win")
 endif ()
 
-set(FFMPEG_REV "888688c6")
+set(FFMPEG_REV "50a94cff")
 
 if (${ALLINONE_BUILD})
   message("Using local deps from all-in-one build.")
