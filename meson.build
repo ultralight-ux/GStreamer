@@ -32,12 +32,12 @@ ensure_no_strawberry_perl = '''
 import os
 assert(r'Strawberry\perl\bin' not in os.environ['PATH'])
 '''
-if build_system == 'windows'
-  cmdres = run_command(python3, '-c', ensure_no_strawberry_perl)
-  if cmdres.returncode() != 0
-    error('You have Strawberry Perl in PATH which is known to cause build issues with gst-build. Please remove it from PATH or uninstall it.')
-  endif
-endif
+# if build_system == 'windows'
+#   cmdres = run_command(python3, '-c', ensure_no_strawberry_perl)
+#   if cmdres.returncode() != 0
+#     error('You have Strawberry Perl in PATH which is known to cause build issues with gst-build. Please remove it from PATH or uninstall it.')
+#   endif
+# endif
 
 documented_projects = ''
 # Make it possible to use msys2 built zlib which fails

@@ -12,6 +12,13 @@
 choco install cmake meson ninja python3
 ```
 
+4. The installation of Strawberry Perl (needed by other Ultralight deps) conflicts with Meson, you'll need 
+   to rename or delete the following paths:
+
+ * `C:\Strawberry\c`
+ * `C:\Strawberry\perl\bin\pkg-config.bat`
+ * `C:\Strawberry\perl\bin\pkg-config`
+
 ### Setting up on macOS
 
 1. Install Xcode Command Line Tools (or the full Xcode package).
